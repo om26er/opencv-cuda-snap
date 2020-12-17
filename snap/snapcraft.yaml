@@ -1,0 +1,35 @@
+name: opencv-hello
+base: core20
+version: '0.2'
+summary: Example snap package to run openCV on CUDA
+description: |
+  Example snap package to run openCV on CUDA
+grade: stable
+confinement: strict
+
+architectures:
+  - build-on: arm64
+    run-on: arm64
+
+apps:
+  opencv-hello:
+    command: bin/opencv_version
+    environment:
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:/var/lib/snapd/hostfs/usr/lib
+    plugs:
+      - network
+      - network-bind
+      - opengl
+
+parts:
+  opencv:
+    source: ./opencv.tar.gz
+    source-type: tar
+    plugin: dump
+    stage-packages:
+      - libgomp1
+  deps:
+    plugin: python
+    python-packages:
+      - numpy
+      - Pillow
