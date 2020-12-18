@@ -48,7 +48,7 @@ parts:
       - haarcascade_frontalface_default.xml
       - bin/main.py
   opencv:
-    source: ./opencv-4.5.0-aarch64.tar.gz
+    source: http://download.crossbario.com/crossbarfx-os/opencv-4.5.0-aarch64.tar.gz
     source-type: tar
     plugin: dump
     stage-packages:
