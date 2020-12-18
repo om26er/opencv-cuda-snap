@@ -1,9 +1,9 @@
-name: opencv-hello
+name: opencv-cuda102-hello
 base: core20
 version: '0.2'
-summary: Example snap package to run openCV on CUDA
+summary: Example snap package to run OpenCV on CUDA 10.2
 description: |
-  Example snap package to run openCV on CUDA
+  Example snap package to run OpenCV on CUDA 10.2
 grade: stable
 confinement: strict
 
@@ -12,24 +12,44 @@ architectures:
     run-on: arm64
 
 apps:
-  opencv-hello:
-    command: bin/opencv_version
+  opencv-cuda102-hello:
+    command: bin/main.py
     environment:
-      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:/var/lib/snapd/hostfs/usr/lib
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:/var/lib/snapd/hostfs/usr/lib:$SNAP/lib:$SNAP/lib/aarch64-linux-gnu:$SNAP/usr/lib/aarch64-linux-gnu
+      PYTHONPATH: $SNAP/lib/python3.8/site-packages
     plugs:
       - network
       - network-bind
       - opengl
 
 parts:
+  autobahn:
+    plugin: nil
+    override-build: |
+      snapcraftctl build
+      pip3 install --ignore-installed --prefix $SNAPCRAFT_PART_INSTALL autobahn[serialization,twisted] numpy Pillow
+    stage-packages:
+      - libsnappy1v5
+    build-packages:
+      - build-essential
+      - gcc
+      - libffi-dev
+      - libssl-dev
+      - make
+      - python3-pip
+      - python3-dev
+      - libsnappy-dev
+  data:
+    plugin: dump
+    source: .
+    organize:
+      main.py: bin/main.py
+    prime:
+      - haarcascade_frontalface_default.xml
+      - bin/main.py
   opencv:
-    source: ./opencv.tar.gz
+    source: ./opencv-4.5.0-aarch64.tar.gz
     source-type: tar
     plugin: dump
     stage-packages:
       - libgomp1
-  deps:
-    plugin: python
-    python-packages:
-      - numpy
-      - Pillow
