@@ -15,7 +15,7 @@ apps:
   opencv-cuda102-hello:
     command: bin/main.py
     environment:
-      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:/var/lib/snapd/hostfs/usr/lib:$SNAP/lib:$SNAP/lib/aarch64-linux-gnu:$SNAP/usr/lib/aarch64-linux-gnu
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:/var/lib/snapd/hostfs/usr/lib:$SNAP/lib:$SNAP/lib/aarch64-linux-gnu:$SNAP/usr/lib/aarch64-linux-gnu:$SNAP/usr/lib/aarch64-linux-gnu/openblas-pthread
       PYTHONPATH: $SNAP/lib/python3.8/site-packages
     plugs:
       - network
@@ -25,11 +25,19 @@ apps:
 parts:
   autobahn:
     plugin: nil
+    source: .
     override-build: |
       snapcraftctl build
       pip3 install --ignore-installed --prefix $SNAPCRAFT_PART_INSTALL autobahn[serialization,twisted] numpy Pillow
+      pip3 install --prefix $SNAPCRAFT_PART_INSTALL ./torch-1.7.0-cp38-cp38-linux_aarch64.whl torchvision
+      find $SNAPCRAFT_PART_INSTALL -name '*.so*' -exec strip {} \;
     stage-packages:
       - libsnappy1v5
+      - libgfortran5
+      - libopenblas0
+      # Actually required by opencv part, however installing libgomp1 pulls in
+      # libpthread, which then conflcits with the one pulled by libopenblas0
+      - libgomp1
     build-packages:
       - build-essential
       - gcc
@@ -51,5 +59,3 @@ parts:
     source: http://download.crossbario.com/crossbarfx-os/opencv-4.5.0-aarch64.tar.gz
     source-type: tar
     plugin: dump
-    stage-packages:
-      - libgomp1
